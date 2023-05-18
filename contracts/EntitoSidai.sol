@@ -51,8 +51,9 @@ contract EntitoSidai is
 
     //WaitList
     mapping(address => bool) public waitlisted;
+     uint256 public constant MAX_WAITLIST_SEATS = 3;
     uint256 public seatsFilled;
-    uint256 public maxSeats;
+   
 
     // General
     string private _baseTokenURI;
@@ -62,7 +63,6 @@ contract EntitoSidai is
     event UpdateBaseURI(string baseURI);
     event UpdateMintPrice(uint256 _price);
     event UpdateSalePhase(uint256 index);
-    event UpdateOwnerFund(address _ownerFund);
 
     constructor() ERC721A("EntitoSidai", "ESIDAI") {
         //ownerFund = payable(msg.sender);
@@ -117,7 +117,7 @@ contract EntitoSidai is
      * @notice Join the waitlist.
      */
     function joinWaitlist() public nonReentrant {
-        require(seatsFilled < maxSeats, "Waitlist is full");
+        require(seatsFilled < MAX_WAITLIST_SEATS, "Waitlist is full");
         require(!waitlisted[msg.sender], "Already on the waitlist");
 
         waitlisted[msg.sender] = true;
@@ -199,14 +199,6 @@ contract EntitoSidai is
     function setPublicPrice(uint256 _price) external onlyOwner {
         PUBLIC_MINT_PRICE = _price;
         emit UpdateMintPrice(_price);
-    }
-
-    /**
-     * @notice Set the maximum number of seats in the waitlist.
-     * @param _maxSeats The new maximum number of seats.
-     */
-    function setMaxSeats(uint256 _maxSeats) public {
-        maxSeats = _maxSeats;
     }
 
     //===============================================================
