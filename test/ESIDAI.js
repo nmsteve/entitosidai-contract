@@ -248,6 +248,32 @@ describe.only('ESidai', function (params) {
             })
         })
 
+        describe('Owner mint', function () {
+
+            it('should mint at any stage', async function () {
+                const { ESidai,owner } = await loadFixture(deploy)
+                const ownerAddress = await owner.getAddress()
+                await ESidai.ownerMint(ownerAddress, 5)
+                expect(await ESidai.balanceOf(ownerAddress)).to.be.equal(5)
+
+            })
+
+            it('Should not mint amount exceeding MAX_Supply', async function () {
+                const { ESidai, owner } = await loadFixture(deploy)
+                const ownerAddress = await owner.getAddress()
+                try {
+                    await ESidai.ownerMint(ownerAddress, 6)
+                    // If the transaction did not revert, fail the test
+                    expect.fail('Transaction did not revert');
+                } catch (error) {
+                    expect(error.message).to.include('ExceedsMaxSupply()')
+                    
+                }
+            })
+           
+            
+        })
+
         describe('double mint', function () {
             it('should mint waitlist then public if max_per_wallet not reached', async function () {
                 const { ESidai, user1 } = await loadFixture(deploy)
@@ -328,6 +354,52 @@ describe.only('ESidai', function (params) {
 
         })
 
+        it('Should set royalty fee', async function () {
+            const { ESidai, user1 } = await loadFixture(deploy)
+            await ESidai.setDefaultRoyalty(user1.getAddress(), 500)
+
+        })
+
+    })
+
+    describe('Setters Oparations', function () {
+
+        it('setBaseURI', async function () {
+            const { ESidai, owner } = await loadFixture(deploy)
+        expect( await ESidai.setBaseURI(
+                'https://goerli.etherscan.io/address/0x69e04dda9025a6d127c0e382999432b3d3a57fea#readContract/'))
+                .to.emit('UpdateBaseURI()').withArgs(
+                    'https://goerli.etherscan.io/address/0x69e04dda9025a6d127c0e382999432b3d3a57fea#readContract')
+        await ESidai.ownerMint( owner.getAddress(),5)
+            expect(await ESidai.tokenURI(1)).to.be.eq(
+                'https://goerli.etherscan.io/address/0x69e04dda9025a6d127c0e382999432b3d3a57fea#readContract/1')
+        })
+
+        it('setPhase', async function () {
+            const { ESidai, owner } = await loadFixture(deploy)
+            expect(await ESidai.setPhase(0)).to.emit('UpdateSalePhase')
+            expect(await ESidai.phase()).to.eq(0)
+            await ESidai.setPhase(1)
+            expect(await ESidai.phase()).to.eq(1)
+            await ESidai.setPhase(2)
+            expect(await ESidai.phase()).to.eq(2)
+            await ESidai.setPhase(3)
+            expect(await ESidai.phase()).to.eq(3)
+
+        })
+
+        it('setWaitlistPrice', async function () {
+            const { ESidai, owner } = await loadFixture(deploy)
+            expect(await ESidai.setWaitlistPrice(ethers.utils.parseEther('0.05'))).to.emit
+            expect(await ESidai.WL_MINT_PRICE()).to.be.eqls(ethers.utils.parseEther('0.05'))
+        })
+
+        it('setPublicPrice', async function () {
+            const { ESidai, owner } = await loadFixture(deploy)
+            expect(await ESidai.setPublicPrice(ethers.utils.parseEther('0.25'))).to.emit
+            expect(await ESidai.PUBLIC_MINT_PRICE()).to.be.eqls(ethers.utils.parseEther('0.25'))
+        })
+        
     })
 
 })

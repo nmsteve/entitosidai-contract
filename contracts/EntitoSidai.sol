@@ -43,7 +43,7 @@ contract EntitoSidai is
     }
 
     // Mint Information
-    uint256 public constant MAX_SUPPLY = 5;
+    uint256 public constant MAX_SUPPLY = 1000;
     uint256 public constant MAX_PER_WALLET = 2;
     uint256 public WL_MINT_PRICE = 0.075 ether;
     uint256 public PUBLIC_MINT_PRICE = 0.1 ether;
@@ -51,7 +51,7 @@ contract EntitoSidai is
 
     //WaitList
     mapping(address => bool) public waitlisted;
-     uint256 public constant MAX_WAITLIST_SEATS = 3;
+     uint256 public constant MAX_WAITLIST_SEATS = 250;
     uint256 public seatsFilled;
    
 
@@ -61,8 +61,10 @@ contract EntitoSidai is
 
     // Events
     event UpdateBaseURI(string baseURI);
-    event UpdateMintPrice(uint256 _price);
     event UpdateSalePhase(uint256 index);
+    event UpdateWaitlistMintPrice(uint256 _price);
+    event UpdatePublicMintPrice(uint256 _price);
+    
 
     constructor() ERC721A("EntitoSidai", "ESIDAI") {
         //ownerFund = payable(msg.sender);
@@ -193,12 +195,12 @@ contract EntitoSidai is
 
     function setWaitlistPrice(uint256 _price) external onlyOwner {
         WL_MINT_PRICE = _price;
-        emit UpdateMintPrice(_price);
+        emit UpdateWaitlistMintPrice(_price);
     }
 
     function setPublicPrice(uint256 _price) external onlyOwner {
         PUBLIC_MINT_PRICE = _price;
-        emit UpdateMintPrice(_price);
+        emit UpdatePublicMintPrice(_price);
     }
 
     //===============================================================
