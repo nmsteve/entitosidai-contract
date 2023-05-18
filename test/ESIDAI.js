@@ -27,14 +27,40 @@ describe.only('ESidai', function (params) {
             expect(await ESidai.owner()).to.be.equal(await owner.getAddress())
         })
 
+    })
 
+    describe('Join waitlist', function () {
+        it('should allow any one to join', async function () {
+            const { ESidai, owner, user1, user2, user3, user4 } = await loadFixture(deploy)
+            await ESidai.connect(user1).joinWaitlist()
+            await ESidai.connect(user2).joinWaitlist()
+            expect(await ESidai.seatsFilled()).to.be.equal(2)
+            expect(await ESidai.waitlisted(await user1.getAddress())).to.be.equal(true)
+
+        })
+
+        it('Should revert if Already in waitList', async function () {
+            const { ESidai, owner, user1, user2, user3, user4 } = await loadFixture(deploy)
+            await ESidai.connect(user1).joinWaitlist()
+            await expect(ESidai.connect(user1).joinWaitlist()).to.be.rejectedWith("Already on the waitlist")
+
+        })
+
+        it('Should revert if "Waitlist is full"', async function () {
+            const { ESidai, owner, user1, user2, user3, user4 } = await loadFixture(deploy)
+            await ESidai.connect(user1).joinWaitlist()
+            await ESidai.connect(user2).joinWaitlist()
+            await ESidai.connect(user3).joinWaitlist()
+            expect(await ESidai.seatsFilled()).to.be.equal(3)
+            await expect(ESidai.connect(user4).joinWaitlist()).to.be.rejectedWith("Waitlist is full")
+
+        })
     })
 
     describe('Mint Oparations', function () {
 
 
         describe('WaitList Mint', function () {
-            it('Similar reverts tested in Public Mint')
 
             it('revert if address not in waitlist', async function () {
                 const { ESidai, owner, user1 } = await loadFixture(deploy)
@@ -44,10 +70,10 @@ describe.only('ESidai', function (params) {
 
             it('Should Revert if Insufficent Funds', async function () {
                 const { ESidai, user1 } = await loadFixture(deploy)
-                await ESidai.setPhase(2)
-                await ESidai.setPublicPrice(ethers.utils.parseEther('0.1'))
+                await ESidai.setPhase(1)
+                await ESidai.connect(user1).joinWaitlist()
                 try {
-                    await ESidai.connect(user1).publicMint(2, { value: ethers.utils.parseEther('0.1') })
+                    await ESidai.connect(user1).waitlistMint(2, { value: ethers.utils.parseEther('0.1') })
                     // If the transaction did not revert, fail the test
                     expect.fail('Transaction did not revert');
                 } catch (error) {
@@ -55,6 +81,57 @@ describe.only('ESidai', function (params) {
                     expect(error.message).to.include('IncorrectETHSent()');
                 }
             })
+
+            it('Should mint if everything is okay', async function () {
+                const { ESidai, user1 } = await loadFixture(deploy)
+                await ESidai.setPhase(1)
+                await ESidai.connect(user1).joinWaitlist()
+                await ESidai.connect(user1).waitlistMint(2, {
+                    value: ethers.utils.parseEther('0.15')
+
+                })
+                expect(await ethers.provider.getBalance(ESidai.address)).to.be.equal(ethers.utils.parseEther('0.15'))
+                expect(await ESidai.getNumberMinted(await user1.getAddress())).to.be.equal(2)
+
+            })
+
+            it('Should Revert if Max per wallet reached', async function () {
+                const { ESidai, user1 } = await loadFixture(deploy)
+                await ESidai.setPhase(1)
+                await ESidai.connect(user1).joinWaitlist()
+                await ESidai.connect(user1).waitlistMint(1, { value: ethers.utils.parseEther('0.1') })
+
+                try {
+                    await ESidai.connect(user1).waitlistMint(2, { value: ethers.utils.parseEther('0.2') })
+                    // If the transaction did not revert, fail the test
+                    expect.fail('Transaction did not revert');
+                } catch (error) {
+                    // Check if the error message matches the expected custom error message
+                    expect(error.message).to.include('ExceedsMaxPerWallet()');
+                }
+            })
+
+            it('Should Revert if Max supply reached', async function () {
+                const { ESidai, user1, user2, user3 } = await loadFixture(deploy)
+                await ESidai.setPhase(1)
+                await ESidai.connect(user1).joinWaitlist()
+                await ESidai.connect(user2).joinWaitlist()
+                await ESidai.connect(user3).joinWaitlist()
+                await ESidai.connect(user1).waitlistMint(2, { value: ethers.utils.parseEther('0.2') })
+                await ESidai.connect(user2).waitlistMint(2, { value: ethers.utils.parseEther('0.2') })
+
+
+                try {
+                    await ESidai.connect(user3).waitlistMint(2, { value: ethers.utils.parseEther('0.2') })
+                    // If the transaction did not revert, fail the test
+                    expect.fail('Transaction did not revert');
+                } catch (error) {
+                    // Check if the error message matches the expected custom error message
+                    expect(error.message).to.include('ExceedsMaxSupply()');
+                }
+            })
+
+            it('Similar reverts tested in Public Mint')
         })
 
         describe('Public Mint', function () {
@@ -171,21 +248,83 @@ describe.only('ESidai', function (params) {
             })
         })
 
-    })
+        describe('double mint', function () {
+            it('should mint waitlist then public if max_per_wallet not reached', async function () {
+                const { ESidai, user1 } = await loadFixture(deploy)
+                //mint waitlist
+                await ESidai.setPhase(1)
+                await ESidai.connect(user1).joinWaitlist()
+                await ESidai.connect(user1).waitlistMint(1, { value: ethers.utils.parseEther('0.075') })
+                expect(await ethers.provider.getBalance(ESidai.address)).to.be.eq(ethers.utils.parseEther('0.075'))
 
-    describe('Others', function () {
-        it.skip('Should withdraw funds at any time', async function () {
+                //mint public 
+                await ESidai.setPhase(2)
+                await ESidai.connect(user1).publicMint(1, { value: ethers.utils.parseEther('0.1') })
+                expect(await ethers.provider.getBalance(ESidai.address)).to.be.eq(ethers.utils.parseEther('0.175'))
 
-            const { ESidai, owner, user2 } = await loadFixture(deploy)
-            const collectedFunds = await ethers.provider.getBalance(ESidai.address)
-            console.log(`           collectedFunds: ${ethers.utils.formatEther(collectedFunds)}`)
+            })
+
+            it('should not mint waitlist then public if max_per_wallet reached', async function () {
+                const { ESidai, user1 } = await loadFixture(deploy)
+                //mint waitlist
+                await ESidai.setPhase(1)
+                await ESidai.connect(user1).joinWaitlist()
+                await ESidai.connect(user1).waitlistMint(2, { value: ethers.utils.parseEther('0.15') })
+                expect(await ethers.provider.getBalance(ESidai.address)).to.be.eq(ethers.utils.parseEther('0.15'))
+
+                //mint public 
+                await ESidai.setPhase(2)
+                try {
+                    await ESidai.connect(user1).publicMint(2, { value: ethers.utils.parseEther('0.2') })
+                    // If the transaction did not revert, fail the test
+                    expect.fail('Transaction did not revert');
+                } catch (error) {
+                    // Check if the error message matches the expected custom error message
+                    expect(error.message).to.include('ExceedsMaxPerWallet()');
+                }
+
+
+            })
         })
 
-        it.skip('Should have the royalty fees set to 2.5%', async function () {
+    })
+
+    describe('Funds Oparations', function () {
+        it('Should withdraw funds at any time', async function () {
+
+            const { ESidai, owner, user1, user2 } = await loadFixture(deploy)
+            //const collectedFunds =
+            console.log(`           Funds before mint: ${ethers.utils.formatEther(
+                await ethers.provider.getBalance(ESidai.address))}`)
+
+            //mint to have ETH
+            //mint waitlist
+            await ESidai.setPhase(1)
+            await ESidai.connect(user1).joinWaitlist()
+            await ESidai.connect(user1).waitlistMint(2, { value: ethers.utils.parseEther('0.15') })
+            expect(await ethers.provider.getBalance(ESidai.address)).to.be.eq(ethers.utils.parseEther('0.15'))
+
+            //mint public 
+            await ESidai.setPhase(2)
+            await ESidai.connect(user2).publicMint(1, { value: ethers.utils.parseEther('0.1') })
+            expect(await ethers.provider.getBalance(ESidai.address)).to.be.eq(ethers.utils.parseEther('0.25'))
+            console.log(`           Funds after mint: ${ethers.utils.formatEther(
+                await ethers.provider.getBalance(ESidai.address))}`)
+
+            //withdraw
+            const balBefore = await ethers.provider.getBalance(await owner.getAddress())
+            await ESidai.withdraw()
+            const balAfter = await ethers.provider.getBalance(await owner.getAddress())
+            console.log(`           Amount expected: 0.25`)
+            console.log(`           Amount collected: ${ethers.utils.formatEther((balAfter - balBefore).toString())}`)
+
+        })
+
+        it('Should have the royalty fees set to 2.5%', async function () {
             const { ESidai, owner } = await loadFixture(deploy)
-            const price = ethers.utils.parseEther('100')
-            const { reciever, amount } = await ESidai.royaltyInfo(1, price)
-            expect(amount).to.equal(2.5)
+            const { 0:reciever, 1:amount } = await ESidai.royaltyInfo(1, ethers.utils.parseEther('100'))
+            expect(amount).to.equal(ethers.utils.parseEther('2.5'))
+            expect(reciever).to.be.eq(await owner.getAddress())
 
         })
 
