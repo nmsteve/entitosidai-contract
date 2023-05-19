@@ -357,6 +357,9 @@ describe.only('ESidai', function (params) {
         it('Should set royalty fee', async function () {
             const { ESidai, user1 } = await loadFixture(deploy)
             await ESidai.setDefaultRoyalty(user1.getAddress(), 500)
+            const { 0: reciever, 1: amount } = await ESidai.royaltyInfo(1, ethers.utils.parseEther('100'))
+            expect(amount).to.equal(ethers.utils.parseEther('5'))
+            expect(reciever).to.be.eq(await user1.getAddress())
 
         })
 
