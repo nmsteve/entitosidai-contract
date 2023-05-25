@@ -6,8 +6,6 @@ import {ERC721AQueryable} from "erc721a/contracts/extensions/ERC721AQueryable.so
 import {OperatorFilterer} from "./OperatorFilterer.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC2981, ERC2981} from "@openzeppelin/contracts/token/common/ERC2981.sol";
-import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 // dev
@@ -33,8 +31,6 @@ contract EntitoSidai is
     Ownable,
     ERC2981
 {
-    using ECDSA for bytes32;
-
     enum Phases {
         CLOSED,
         WAITLIST,
@@ -43,7 +39,7 @@ contract EntitoSidai is
     }
 
     // Mint Information
-    uint256 public constant MAX_SUPPLY = 1000;
+    uint256 public constant MAX_SUPPLY = 5;
     uint256 public constant MAX_PER_WALLET = 2;
     uint256 public WL_MINT_PRICE = 0.075 ether;
     uint256 public PUBLIC_MINT_PRICE = 0.1 ether;
@@ -51,9 +47,8 @@ contract EntitoSidai is
 
     //WaitList
     mapping(address => bool) public waitlisted;
-     uint256 public constant MAX_WAITLIST_SEATS = 250;
+    uint256 public constant MAX_WAITLIST_SEATS = 3;
     uint256 public seatsFilled;
-   
 
     // General
     string private _baseTokenURI;
@@ -64,7 +59,6 @@ contract EntitoSidai is
     event UpdateSalePhase(uint256 index);
     event UpdateWaitlistMintPrice(uint256 _price);
     event UpdatePublicMintPrice(uint256 _price);
-    
 
     constructor() ERC721A("EntitoSidai", "ESIDAI") {
         //ownerFund = payable(msg.sender);
@@ -85,7 +79,8 @@ contract EntitoSidai is
 
     /// @notice Checks that the user sent the correct amount of ETH.
     modifier isCorrectEthPublic(uint256 _quantity) {
-        if (msg.value < PUBLIC_MINT_PRICE * _quantity) revert IncorrectETHSent();
+        if (msg.value < PUBLIC_MINT_PRICE * _quantity)
+            revert IncorrectETHSent();
         _;
     }
 
