@@ -6,9 +6,9 @@ async function main() {
     const accounts = await ethers.getSigners();
     
     //get contract factory
-    this.ESidai =await ethers.getContractFactory('EntitoSidai')
+    this.ESidai = await ethers.getContractFactory("EntitoSidaiWaitlistProof")
     //deploy
-    this.ESidai = await this.ESidai.connect(accounts[1]).deploy()
+    this.ESidai = await this.ESidai.connect(accounts[0]).deploy()
 
     console.log( `Contract deployed at ${this.ESidai.address}`);
 }

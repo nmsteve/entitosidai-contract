@@ -13,12 +13,12 @@ describe.only('ESidai', function (params) {
 
 
         // Contracts are deployed using the first signer/account by default
-        const [owner, user1, user2, user3, user4] = await ethers.getSigners();
+        const [owner, user1, user2, user3, user4, user5] = await ethers.getSigners();
 
-        this.ESidai = await ethers.getContractFactory("EntitoSidai");
+        this.ESidai = await ethers.getContractFactory("EntitoSidaiWaitListProof");
         const ESidai = await this.ESidai.deploy();
 
-        return { ESidai, owner, user1, user2, user3, user4 };
+        return { ESidai, owner, user1, user2, user3, user4, user5 };
     }
 
     describe('Deployment', function () {
@@ -29,7 +29,7 @@ describe.only('ESidai', function (params) {
 
     })
 
-    describe('Join waitlist', function () {
+    describe.only('Join waitlist', function () {
         it('should allow any one to join', async function () {
             const { ESidai, owner, user1, user2, user3, user4 } = await loadFixture(deploy)
             await ESidai.connect(user1).joinWaitlist()
@@ -47,12 +47,13 @@ describe.only('ESidai', function (params) {
         })
 
         it('Should revert if "Waitlist is full"', async function () {
-            const { ESidai, owner, user1, user2, user3, user4 } = await loadFixture(deploy)
+            const { ESidai, owner, user1, user2, user3, user4, user5 } = await loadFixture(deploy)
             await ESidai.connect(user1).joinWaitlist()
             await ESidai.connect(user2).joinWaitlist()
             await ESidai.connect(user3).joinWaitlist()
-            expect(await ESidai.seatsFilled()).to.be.equal(3)
-            await expect(ESidai.connect(user4).joinWaitlist()).to.be.rejectedWith("Waitlist is full")
+            await ESidai.connect(user4).joinWaitlist()
+            expect(await ESidai.seatsFilled()).to.be.equal(4)
+            await expect(ESidai.connect(user5).joinWaitlist()).to.be.rejectedWith("Waitlist is full")
 
         })
     })

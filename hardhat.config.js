@@ -1,9 +1,15 @@
 require("@nomicfoundation/hardhat-toolbox");
-require("hardhat-gas-reporter");
 require("dotenv").config();
 
+task("printAddresses", "Prints the addresses of multiple accounts")
+  .setAction(async (taskArgs, hre) => {
+    const accounts = await hre.ethers.getSigners();
 
-
+    console.log("Account addresses:");
+    for (let i = 0; i < accounts.length; i++) {
+      console.log(accounts[i].address);
+    }
+  });
 
 module.exports = {
   networks: {
@@ -68,11 +74,6 @@ module.exports = {
       // gasPrice: 1104494000000
     }
   },
-
-  // gasReporter: {
-  //   currency: "USD",
-  //   gasPrice: 100, // Set your desired gas price (in gwei)
-  // },
 
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
@@ -141,4 +142,7 @@ module.exports = {
       './home/steve/Documents/Dapps/entitosidai-contract/test/Lock.js'
     ]
   }
+
+ 
+
 }
