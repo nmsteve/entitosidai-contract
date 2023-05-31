@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("hardhat-gas-reporter");
 require("dotenv").config();
 
 task("printAddresses", "Prints the addresses of multiple accounts")
@@ -72,7 +73,19 @@ module.exports = {
       // gas:125364,
       // //gas price
       // gasPrice: 1104494000000
+    },
+    mainnet: {
+      url: process.env.MAIN_URL_ALCHEMY,
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 10,
+        passphrase: "",
+      },
+    
     }
+    
   },
 
   etherscan: {
@@ -124,7 +137,7 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200
+            runs: 10000
           }
         }
       }
@@ -141,8 +154,13 @@ module.exports = {
     exclude: [
       './home/steve/Documents/Dapps/entitosidai-contract/test/Lock.js'
     ]
-  }
+  },
 
- 
+ gasReporter: {
+   enabled: true,
+   currency: "USD",
+   outputFile: "gas-report.txt",
+   noColors: true,
+ }
 
 }
