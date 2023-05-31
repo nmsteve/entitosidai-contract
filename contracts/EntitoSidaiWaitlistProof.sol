@@ -20,7 +20,7 @@ ReentrancyGuard
 
      //WaitList
     mapping(address => bool) public waitlisted;
-    uint256 public constant MAX_WAITLIST_SEATS = 4;
+    uint256 public constant MAX_WAITLIST_SEATS = 500;
     uint256 public seatsFilled;
 
 
