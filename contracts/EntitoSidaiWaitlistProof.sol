@@ -6,40 +6,43 @@
  * @notice Paying the gas fee to join the waitlist is proof of genuine interest in the 
  *         project and helps ensure that only serious participants can mint in the private sale.
  *         This helps prevent the waitlist, which has limited seats,from being filled with 
- *         non-serious participants.
+ *         non-serious participants. The addresses collected here will be used when creating opensea drop.
  */
 pragma solidity ^0.8.4;
- 
- import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-
-contract EntitoSidaiWaitlistProof
-is
-ReentrancyGuard
- {
-
-     //WaitList
+contract EntitoSidaiWaitlistProof {
+    // Waitlist
     mapping(address => bool) public waitlisted;
-    uint256 public constant MAX_WAITLIST_SEATS = 500;
     uint256 public seatsFilled;
+    uint256 public  MAX_SEATS = 4;
+    address public owner;
 
-
-    /// @notice Checks that the user is waitlisted.
-    modifier isWaitlisted(address account) {
-        require(waitlisted[account], "Not on the waitlist");
-        _;
+    constructor() {
+        owner = msg.sender;
     }
 
     /**
      * @notice Join the waitlist.
      */
-    function joinWaitlist() public nonReentrant {
-        require(seatsFilled < MAX_WAITLIST_SEATS, "Waitlist is full");
+    function joinWaitlist() public {
+        require(seatsFilled < MAX_SEATS, "Waitlist is full");
         require(!waitlisted[msg.sender], "Already on the waitlist");
-
         waitlisted[msg.sender] = true;
         seatsFilled++;
     }
 
+     /**
+     * @notice Function to set Max waitlist seats.
+     */
+    function setMaxSeats(uint256 seats) onlyOwner public {
+        MAX_SEATS = seats;
+    }
 
- }
+    /**
+     * @notice Modifier to check if the caller is the contract owner.
+     */
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Caller is not the owner");
+        _;
+    }
+}
