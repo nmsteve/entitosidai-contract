@@ -15,14 +15,14 @@ task("printAddresses", "Prints the addresses of multiple accounts")
 module.exports = {
   networks: {
     hardhat: {
-      forking: {
-        url: process.env.GOERII_URL_AlCHEMY,
-        allowUnlimitedContractSize: true,
-        timeout: 90000,
-        blockNumber: 9026981,
-        chainId: 5,
-        gas: 9000000000000000
-      }
+      // forking: {
+      //   url: process.env.MAIN_URL_ALCHEMY,
+      //   // allowUnlimitedContractSize: true,
+      //   // timeout: 90000,
+      //   blockNumber: 17384590,
+      //   // chainId: 1,
+      //   // gas: 9000000000000000
+      // }
 
     },
     bsctest: {
@@ -83,9 +83,9 @@ module.exports = {
         count: 10,
         passphrase: "",
       },
-    
+
     }
-    
+
   },
 
   etherscan: {
@@ -94,7 +94,7 @@ module.exports = {
 
   solidity: {
     compilers: [
-      
+
 
       {
         version: "0.8.4",
@@ -156,11 +156,14 @@ module.exports = {
     ]
   },
 
- gasReporter: {
-   enabled: true,
-   currency: "USD",
-   outputFile: "gas-report.txt",
-   noColors: true,
- }
+  gasReporter: {
+    enabled: true,
+    outputFile: "gas-report.txt",
+    noColors: true,
+    //gasPrice:18,
+    currency: "USD",
+    //currency: "KES",
+    coinmarketcap: '10dd2305-8865-4931-88e0-f70085c7e5fb'
+  }
 
 }
