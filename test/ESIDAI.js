@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 
-describe.only('ESidai', function (params) {
+describe('ESidai', function (params) {
 
     // We define a fixture to reuse the same setup in every test.
     // We use loadFixture to run this setup once, snapshot that state,
@@ -15,7 +15,7 @@ describe.only('ESidai', function (params) {
         // Contracts are deployed using the first signer/account by default
         const [owner, user1, user2, user3, user4, user5] = await ethers.getSigners();
 
-        this.ESidai = await ethers.getContractFactory("EntitoSidaiWaitListProof");
+        this.ESidai = await ethers.getContractFactory("EntitoSidai");
         const ESidai = await this.ESidai.deploy();
 
         return { ESidai, owner, user1, user2, user3, user4, user5 };
@@ -29,7 +29,7 @@ describe.only('ESidai', function (params) {
 
     })
 
-    describe.only('Join waitlist', function () {
+    describe('Join waitlist', function () {
         it('should allow any one to join', async function () {
             const { ESidai, owner, user1, user2, user3, user4 } = await loadFixture(deploy)
             await ESidai.connect(user1).joinWaitlist()
