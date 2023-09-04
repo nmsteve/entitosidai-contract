@@ -15,19 +15,31 @@ task("printAddresses", "Prints the addresses of multiple accounts")
 module.exports = {
   networks: {
     hardhat: {
-      // forking: {
-      //   url: process.env.MAIN_URL_ALCHEMY,
-      //   // allowUnlimitedContractSize: true,
-      //   // timeout: 90000,
-      //   blockNumber: 17384590,
-      //   // chainId: 1,
-      //   // gas: 9000000000000000
-      // }
+      forking: {
+        url: process.env.GOERLI,
+        // allowUnlimitedContractSize: true,
+        // timeout: 90000,
+        blockNumber: 9557998,
+        // chainId: 1,
+        // gas: 9000000000000000
+      }
 
     },
     bsctest: {
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      url: "https://data-seed-prebsc-1-s2.binance.org:8545", 
       chainId: 97,
+      gasPrice: 20000000000,
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20,
+        passphrase: "",
+      },
+    },
+    bscmain: {
+      url: "https://bsc-dataseed.bnbchain.org/",
+      chainId: 56,
       gasPrice: 20000000000,
       accounts: {
         mnemonic: process.env.MNEMONIC,
@@ -51,7 +63,7 @@ module.exports = {
       chainId: 159
     },
     goerli: {
-      url: process.env.GOERII_URL_AlCHEMY,
+      url: process.env.GOERLI,
       accounts: {
         mnemonic: process.env.MNEMONIC,
         path: "m/44'/60'/0'/0",
@@ -63,19 +75,26 @@ module.exports = {
     sepolia: {
       url: process.env.SEPOLIA,
       accounts: {
+        mnemonic: process.env.lostWallet,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 10,
+        passphrase: "",
+      },
+      },
+    opt: {
+      url: process.env.OPTIMISM,
+      accounts: {
         mnemonic: process.env.MNEMONIC,
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
         count: 10,
         passphrase: "",
       },
-      //gas limit
-      // gas:125364,
-      // //gas price
-      // gasPrice: 1104494000000
+     
     },
-    mainnet: {
-      url: process.env.MAIN_URL_ALCHEMY,
+    arb: {
+      url: process.env.ARBITRUM,
       accounts: {
         mnemonic: process.env.MNEMONIC,
         path: "m/44'/60'/0'/0",
@@ -84,12 +103,28 @@ module.exports = {
         passphrase: "",
       },
 
+    },
+
+    mainnet: {
+      url: process.env.MAIN,
+      accounts: {
+        mnemonic: process.env.MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 10,
+        passphrase: "",
+      },
+      
+
     }
 
   },
 
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    
+    //apiKey: process.env.ETHERSCAN_API_KEY,
+    //apiKey: process.env.BSCSCAN_API_KEY
+    apiKey: process.env.ARBITRUM_API_KEY
   },
 
   solidity: {

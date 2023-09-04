@@ -28,21 +28,21 @@ contract EntitoSidaiNFTs is
     ERC2981
 {
     // Mint Information
-    uint256 public constant MAX_SUPPLY = 5;
-    uint256 public constant MAX_PER_WALLET = 2;
-    uint256 public PUBLIC_MINT_PRICE = 0.02 ether;
+    uint256 public constant MAX_SUPPLY = 2000;
+    uint256 public constant MAX_PER_WALLET = 1000;
+    uint256 public PUBLIC_MINT_PRICE = 0.003 ether;
 
     // General
     string private _baseTokenURI;
-    string public POLICYURI;
+    string public constant POLICYURI = 'https://ipfs.io/ipfs/bafkreif3iv35ssght6d24bzyq7mslxmrrlilgy2nbyohzop74hvluv5mqe';
     bool public minting = false;
 
     // Events
     event UpdateBaseURI(string baseURI);
     event UpdatePublicMintPrice(uint256 _price);
 
-    constructor(string memory _policyURI) ERC721A("EntitoSidaiNFTs", "ESN") {
-        POLICYURI = _policyURI;
+    constructor() ERC721A("EntitoSidaiNFTs", "ESNF") {
+        
     }
 
     //===============================================================
@@ -92,6 +92,13 @@ contract EntitoSidaiNFTs is
 
     function setMinting(bool state) external onlyOwner {
         minting = state;
+    }
+
+    function setDefaultRoyalty(
+        address receiver,
+        uint96 feeNumerator
+    ) public onlyOwner {
+        _setDefaultRoyalty(receiver, feeNumerator);
     }
 
     //===============================================================
@@ -150,12 +157,14 @@ contract EntitoSidaiNFTs is
     function _startTokenId() internal view virtual override returns (uint256) {
         return 1;
     }
+    /**
+     * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
+     */
+    function tokenURI(uint256 tokenId) public view virtual override(ERC721A, IERC721A) returns (string memory) {
+        if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
 
-    function setDefaultRoyalty(
-        address receiver,
-        uint96 feeNumerator
-    ) public onlyOwner {
-        _setDefaultRoyalty(receiver, feeNumerator);
+        string memory baseURI = _baseURI();
+        return bytes(baseURI).length != 0 ? string(abi.encodePacked(baseURI, _toString(tokenId),'.json')) : '';
     }
 
     //===============================================================
